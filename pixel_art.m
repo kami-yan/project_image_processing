@@ -10,8 +10,10 @@ image_input = rgb2lab(image_input);
 M = w_in * h_in;
 
 % Output image
-w_out = w_in / 2;
-h_out = h_in / 2;
+pixel_factor_h = 6;
+pixel_factor_w = 10;
+w_out = w_in / pixel_factor_w;
+h_out = h_in / pixel_factor_h;
 N = w_out*h_out;
 image_output = zeros(h_in,w_in,3); 
 % [L,numLabels] = superpixel(image_input,N); % not he exact method, as the
@@ -29,11 +31,11 @@ end
 % Colors
 max_color = 16; % max number of color of the output image 
 mean_color = zeros(1,3); % mean color of the input image
-for k = 1:nb_color
-    mean_color(1) = mean(image_input(:,:,1),[1,2]);
-    mean_color(2) = mean(image_input(:,:,2),[1,2]);
-    mean_color(3) = mean(image_input(:,:,3),[1,2]);
-end
+
+mean_color(1) = mean(image_input(:,:,1),[1,2]);
+mean_color(2) = mean(image_input(:,:,2),[1,2]);
+mean_color(3) = mean(image_input(:,:,3),[1,2]);
+
 palette = zeros(max_color,3);
 palette(1,1) = mean_color(1);
 palette(1,2) = mean_color(2);
@@ -67,7 +69,7 @@ while T >Tf
         for l = 1:w_in
             d = zeros(h_out,w_out);
             % compare with all superpixel
-            for a = 1:h_out
+            for a = 1:h_out % We want to look only around the pixel  
                 for b = 1:w_out
                     difference_color_bewteen_pixel_and_super_pixel = abs(image_input(k, l, 1) - palette(super(a,b,3),1)) + abs(image_input(k, l, 2) - palette(super(a,b,3),2)) + abs(image_input(k, l, 3) - palette(super(a,b,3),3));
                     difference_position_bewteen_pixel_and_super_pixel = abs(k-super(a,b,1)) + abs(l-super(a,b,2));
@@ -76,9 +78,9 @@ while T >Tf
             end           
             % take the min of d and associate the pixel with the superpixel
             [row,col] = find(d==min(d(:)));
-            image_output(k,l,1) = super(row,col,1);
-            image_output(k,l,2) = super(row,col,2);
-            image_output(k,l,3) = super(row,col,3);
+            image_output(k,l,1) = palette(super(row,col,3),1);
+            image_output(k,l,2) = palette(super(row,col,3),2);
+            image_output(k,l,3) = palette(super(row,col,3),3);
         end
     end
    
